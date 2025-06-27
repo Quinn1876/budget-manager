@@ -36,14 +36,63 @@ services:
         # You don't need to create the `db-data` folder. Docker Compose will do it for you
         - ./db-data/:/var/lib/postgresql/data/
 
+
+
   pgadmin:
     image: dpage/pgadmin4
     ports:
       - 15433:80
     env_file:
       - .env
-    depends_on:
-      - database
 
     volumes:
       - ./pgadmin-data/:/var/lib/pgadmin/
+
+    depends_on:
+      - database
+
+  backend:
+    environment:
+      - FLASK_APP=py3.apps.backend
+      - PYTHON_PATH=/app/py3:$PYTHON_PATH
+
+    env_file:
+      - .env
+
+    build:
+      context: py3/apps/backend
+      dockerfile: Dockerfile
+
+    ports:
+      - 5000:5000
+
+    working_dir: /app
+    volumes:
+      - ./py3:/app/py3
+      - ./graphql:/app/graphql
+
+    command: python3 -m py3.apps.backend
+    depends_on:
+      - database
+
+  dashboard:
+    build:
+      context: dashboard
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: development
+
+    env_file:
+      - .env
+
+    working_dir: /usr/src/app
+
+    volumes:
+      - ./dashboard:/usr/src/app
+      - ./graphql:/usr/src/graphql
+
+    ports:
+      - 3000:3000
+
+    depends_on:
+      - backend

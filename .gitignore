@@ -1,1 +1,5 @@
 data/
+.env
+pgadmin-data/
+db-data/
+__pycache__/

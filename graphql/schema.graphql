@@ -1,0 +1,83 @@
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+# Top-level account type
+type Account {
+  account_number: String!
+  account_type: String!
+  owner: String
+  account_name: String
+
+  # One-to-many relationship: an account can have multiple transactions
+  transactions: [Transaction!]!
+}
+
+# Top-level transaction type
+type Transaction {
+  transaction_id: ID!
+  account_number: String!
+  date: String!
+  description_1: String
+  description_2: String
+  amount: Float!
+  currency: String!
+
+  # Foreign key reference
+  account: Account!
+}
+
+# Input type for creating an account
+input CreateAccountInput {
+  account_number: String!
+  account_type: String!
+  owner: String = "Quinn"
+  account_name: String = ""
+}
+
+# Input type for updating an account
+input UpdateAccountInput {
+  account_type: String
+  owner: String
+  account_name: String
+}
+
+# Input type for creating a transaction
+input CreateTransactionInput {
+  account_number: String!
+  date: String!
+  description_1: String
+  description_2: String
+  amount: Float!
+  currency: String = "CAD$"
+}
+
+# Input type for updating a transaction
+input UpdateTransactionInput {
+  date: String
+  description_1: String
+  description_2: String
+  amount: Float
+  currency: String
+}
+
+# Query type to retrieve data
+type Query {
+  getAccount(account_number: String!): Account
+  listAccounts: [Account!]!
+
+  getTransaction(transaction_id: ID!): Transaction
+  listTransactions(account_number: String): [Transaction!]!
+}
+
+# Mutation type to modify data
+type Mutation {
+  createAccount(input: CreateAccountInput!): Account!
+  updateAccount(account_number: String!, input: UpdateAccountInput!): Account!
+  deleteAccount(account_number: String!): Boolean!
+
+  createTransaction(input: CreateTransactionInput!): Transaction!
+  updateTransaction(transaction_id: ID!, input: UpdateTransactionInput!): Transaction!
+  deleteTransaction(transaction_id: ID!): Boolean!
+}
