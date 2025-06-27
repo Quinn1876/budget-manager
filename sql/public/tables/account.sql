@@ -5,6 +5,7 @@ CREATE TABLE public.account
     account_type character varying(20) NOT NULL,
     owner text DEFAULT 'Quinn',
     account_name text DEFAULT '',
+    initial_balance numeric NOT NULL DEFAULT 0,
     PRIMARY KEY (account_number)
 );
 
