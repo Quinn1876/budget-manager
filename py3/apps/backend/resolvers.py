@@ -11,13 +11,13 @@ transaction_obj = ObjectType("Transaction")
 @query.field("listAccounts")
 def resolve_accounts(*_):
     with get_cursor() as cur:
-        cur.execute("SELECT * FROM account")
+        cur.execute("SELECT account_number, account_type, owner, account_name FROM account")
         return [
             {
                 "account_number": row[0],
                 "account_type": row[1],
                 "owner": row[2],
-                "account_name": row[3]
+                "account_name": row[3],
             }
             for row in cur.fetchall()
         ]
@@ -32,7 +32,8 @@ def resolve_account(_, info, account_number):
                 "account_number": row[0],
                 "account_type": row[1],
                 "owner": row[2],
-                "account_name": row[3]
+                "account_name": row[3],
+                "initial_balance": row[4]
             }
 
 @query.field("listTransactions")
@@ -81,7 +82,8 @@ def resolve_transaction_account(obj, *_):
                 "account_number": row[0],
                 "account_type": row[1],
                 "owner": row[2],
-                "account_name": row[3]
+                "account_name": row[3],
+                "initial_balance": row[4]
             }
 
 @account_obj.field("transactions")
@@ -94,12 +96,20 @@ def resolve_account_transactions(obj, *_):
                 "date": str(row[1]),
                 "description_1": row[2],
                 "description_2": row[3],
-                "amount": float(row[4]),
+                "amount": row[4],
                 "currency": row[5].strip(),
                 "transaction_id": str(row[6])
             }
             for row in cur.fetchall()
         ]
+
+@account_obj.field("balance")
+def resolve_account_balance(obj, *_):
+    with get_cursor() as cur:
+        cur.execute("SELECT sum(t.amount) as balance FROM transactions as t where t.account_number = %s", (obj["account_number"],))
+        row = cur.fetchone()
+        if row:
+            return row[0] + obj["initial_balance"]
 
 @mutation.field("createTransaction")
 def resolve_create_transaction(_, info, input):

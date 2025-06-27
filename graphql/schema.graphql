@@ -7,8 +7,12 @@ schema {
 type Account {
   account_number: String!
   account_type: String!
-  owner: String
-  account_name: String
+  owner: String!
+  account_name: String!
+  initial_balance: Float!
+
+  # Calculated Fields
+  balance: Float!
 
   # One-to-many relationship: an account can have multiple transactions
   transactions: [Transaction!]!
@@ -41,6 +45,7 @@ input UpdateAccountInput {
   account_type: String
   owner: String
   account_name: String
+  initial_balance: Float
 }
 
 # Input type for creating a transaction

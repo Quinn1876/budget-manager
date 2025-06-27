@@ -1,3 +1,4 @@
+import AccountTable from "@/components/AccountTable";
 import { getClient } from "@/lib/client";
 import { gql } from "@apollo/client";
 
@@ -12,20 +13,11 @@ const query = gql`
 }`;
 
 export default async function Home() {
-  const { data } = await getClient().query({ query });
+  const client = getClient();
+  const { data } = await client.query({ query });
   return (
-    <div>
-      <table>
-        <tbody>
-            {data["listAccounts"].map((item: {account_number: string}) => {
-              return (
-                <tr key={item.account_number}>
-                  <td >{item.account_number}</td>
-                </tr>
-              );
-            })}
-        </tbody>
-      </table>
+    <div className="flex pl-4 pt-4">
+      <AccountTable accounts={data["listAccounts"]}/>
     </div>
   );
 }
