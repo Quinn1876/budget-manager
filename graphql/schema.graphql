@@ -32,6 +32,14 @@ type Transaction {
   account: Account!
 }
 
+type OwnerSummary {
+  owner: String!
+  accounts: [Account]!
+
+  total_savings: Float!
+  total_dept: Float!
+}
+
 # Input type for creating an account
 input CreateAccountInput {
   account_number: String!
@@ -74,6 +82,8 @@ type Query {
 
   getTransaction(transaction_id: ID!): Transaction
   listTransactions(account_number: String): [Transaction!]!
+
+  getOwnerSummary(owner: String!): OwnerSummary!
 }
 
 # Mutation type to modify data

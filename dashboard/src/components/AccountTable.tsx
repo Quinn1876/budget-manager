@@ -1,11 +1,14 @@
+"use client"
+
 import EditIcon from "@/icons/Edit";
 import { Account } from "@/types/account";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function AccountTable(props: {
     accounts: Account[],
-    returnUri: string
 }) {
+    const pathname = usePathname()
     return (
         <table className="table-auto border-collapse border border-spacing-5">
             <thead>
@@ -25,8 +28,8 @@ export default function AccountTable(props: {
                             <td className="border p-2">{item.account_name}</td>
                             <td className="border p-2">{item.balance}</td>
                             <td className="border p-2">{item.account_type}</td>
-                            <td className="border p-2">{item.owner}</td>
-                            <td className="border"><Link href={`/account/edit/${item.account_number}?return=${props.returnUri}`}><EditIcon className="m-2"/></Link></td>
+                            <td className="border p-2"><Link href={`/owner/${item.owner}`}>{item.owner}</Link></td>
+                            <td className="border"><Link href={`/account/edit/${item.account_number}?return=${pathname}`}><EditIcon className="m-2"/></Link></td>
                         </tr>
                     );
                 })}
