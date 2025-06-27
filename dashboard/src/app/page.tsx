@@ -8,7 +8,8 @@ const query = gql`
       account_number
       account_type
       owner
-      account_name
+      account_name,
+      balance
     }
 }`;
 
@@ -17,7 +18,7 @@ export default async function Home() {
   const { data } = await client.query({ query });
   return (
     <div className="flex pl-4 pt-4">
-      <AccountTable accounts={data["listAccounts"]}/>
+      <AccountTable returnUri="/" accounts={data["listAccounts"]}/>
     </div>
   );
 }
