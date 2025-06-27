@@ -9,6 +9,7 @@ import {
   useCallback,
   useRef,
 } from "react";
+import SnackBar from "./SnackBar";
 
 interface AccountFormProps {
   account: Account;
@@ -56,7 +57,7 @@ export default function AccountForm({ account, onSubmitSuccess }: AccountFormPro
   const owner = useRef<HTMLInputElement>(null);
   const initialBalance = useRef<HTMLInputElement>(null);
   const accountName = useRef<HTMLInputElement>(null);
-  const [updateAccount, { error }] = useMutation(UPDATE_ACCOUNT);
+  const [updateAccount, { error, called }] = useMutation(UPDATE_ACCOUNT);
 
   const submitForm = useCallback<FormEventHandler<HTMLFormElement>>(
     (e) => {
@@ -73,23 +74,27 @@ export default function AccountForm({ account, onSubmitSuccess }: AccountFormPro
         console.error("Account Name not attached");
         return;
       }
-      const variables = {
+      const variables: {account_number: Account["account_number"], input: Partial<Account>} = {
         account_number: account.account_number,
         input: {
-          owner: owner.current.value,
-          initial_balance: initialBalance.current.valueAsNumber,
         },
       };
+
+      if (initialBalance.current.value) {
+        variables.input["initial_balance"] = parseFloat(initialBalance.current.value);
+      }
+
+      if (owner.current.value != null) {
+        variables.input["owner"] = owner.current.value;
+      }
+
+      if (accountName.current.value != null) {
+        variables.input["account_name"] = accountName.current.value;
+      }
+
       console.log(variables);
       updateAccount({
-        variables: {
-          account_number: account.account_number,
-          input: {
-            owner: owner.current.value,
-            initial_balance: initialBalance.current.valueAsNumber,
-            account_name: accountName.current.value,
-          },
-        },
+        variables
       }).then(() => {
         onSubmitSuccess();
       });
@@ -98,31 +103,40 @@ export default function AccountForm({ account, onSubmitSuccess }: AccountFormPro
   );
 
   return (
-    <form onSubmit={submitForm} className="flex flex-col">
-      <h1>Account Form: {account.account_number}</h1>
+    <>
+        <form onSubmit={submitForm} className="flex flex-col">
+        <h1>Account: {account.account_number}</h1>
+        <h2>Transaction Sum: {account.balance - account.initial_balance}</h2>
 
-      <FormInput
-        label="Account Name"
-        id="account_name"
-        defaultValue={account.account_name}
-        ref={accountName}
-      />
-      <FormInput
-        label="Owner"
-        id="owner"
-        defaultValue={account.owner}
-        ref={owner}
-      />
-      <FormInput
-        label="Initial Balance"
-        id="initial_balance"
-        defaultValue={account.initial_balance}
-        ref={initialBalance}
-      />
+        <FormInput
+            label="Account Name"
+            id="account_name"
+            defaultValue={account.account_name}
+            ref={accountName}
+            />
+        <FormInput
+            label="Owner"
+            id="owner"
+            defaultValue={account.owner}
+            ref={owner}
+            />
+        <FormInput
+            label="Initial Balance"
+            id="initial_balance"
+            defaultValue={account.initial_balance}
+            ref={initialBalance}
+            />
 
-      <button type="submit" className="self-end">
-        Submit
-      </button>
-    </form>
+        <button type="submit" className="self-end">
+            Submit
+        </button>
+        </form>
+        <SnackBar
+            message="An Error Occurred when submitting the form"
+            show={called && error != null}
+            variant="error"
+            autoHideDurationMs={5000}
+        />
+    </>
   );
 }
