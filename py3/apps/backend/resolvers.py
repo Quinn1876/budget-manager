@@ -11,13 +11,14 @@ transaction_obj = ObjectType("Transaction")
 @query.field("listAccounts")
 def resolve_accounts(*_):
     with get_cursor() as cur:
-        cur.execute("SELECT account_number, account_type, owner, account_name FROM account")
+        cur.execute("SELECT account_number, account_type, owner, account_name, initial_balance FROM account")
         return [
             {
                 "account_number": row[0],
                 "account_type": row[1],
                 "owner": row[2],
                 "account_name": row[3],
+                "initial_balance": row[4]
             }
             for row in cur.fetchall()
         ]
@@ -147,11 +148,11 @@ def resolve_create_account(_, info, input):
     return input
 
 @mutation.field("updateAccount")
-def resolve_update_account(_, info, request):
+def resolve_update_account(_, info, **request):
     account_number = request["account_number"]
     fields_to_update, values = db.build_set_clause(
-        ["account_type", "owner", "account_name"],
-        request
+        ["account_type", "owner", "account_name", "initial_balance"],
+        request["input"]
     )
 
     if not fields_to_update:
@@ -163,7 +164,7 @@ def resolve_update_account(_, info, request):
         UPDATE account
         SET {", ".join(fields_to_update)}
         WHERE account_number = %s
-        RETURNING account_number, account_type, owner, account_name
+        RETURNING account_number, account_type, owner, account_name, initial_balance
     """
 
     with get_cursor() as cur:
@@ -178,7 +179,8 @@ def resolve_update_account(_, info, request):
         "account_number": row[0],
         "account_type": row[1],
         "owner": row[2],
-        "account_name": row[3]
+        "account_name": row[3],
+        "initial_balance": row[4]
     }
 
 @mutation.field("updateTransaction")
